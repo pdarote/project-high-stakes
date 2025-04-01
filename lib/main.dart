@@ -1,4 +1,11 @@
 import "package:flutter/material.dart";
+import "components/board_section.dart";
+import "components/timer_section.dart";
+import "components/timer_selection_dialog.dart";
+import "components/coin_flip_modal.dart";
+import "components/round_tracker.dart";
+import "utils/toast_notification.dart";
+import "game/game_state.dart";
 
 void main() {
   runApp(const MyApp());
@@ -14,26 +21,154 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: "High Stakes"),
+      home: const GameBoard(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class GameBoard extends StatefulWidget {
+  const GameBoard({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<GameBoard> createState() => _GameBoardState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _GameBoardState extends State<GameBoard>
+    with SingleTickerProviderStateMixin {
+  // Game state
+  final GameState _gameState = GameState();
 
-  void _incrementCounter() {
+  // Toast notification
+  late ToastNotification _toastNotification;
+  late AnimationController _toastAnimationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _toastAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _toastNotification = ToastNotification(
+      context: context,
+      controller: _toastAnimationController,
+    );
+  }
+
+  @override
+  void dispose() {
+    _toastAnimationController.dispose();
+    _toastNotification.dispose();
+    super.dispose();
+  }
+
+  // Start or end game
+  void _startOrEndGame() {
+    if (!_gameState.isGameStarted) {
+      _showTimerDurationDialog();
+    } else {
+      setState(() {
+        _gameState.resetGame();
+      });
+    }
+  }
+
+  // Handle player passing a round
+  void _playerPassedRound() {
     setState(() {
-      _counter++;
+      // GameState updated in passRound method
+      final bool gameEnded = _gameState.passRound();
+
+      if (gameEnded && _gameState.gameResult != null) {
+        // Game ended due to a player winning or a tie
+        final Color toastColor = _gameState.winningPlayer == 1
+            ? Colors.blue.shade800
+            : Colors.red.shade800;
+
+        _toastNotification.show(
+          _gameState.gameResult!,
+          backgroundColor: toastColor,
+        );
+      }
+    });
+  }
+
+  // Show dialog to select timer duration then start game
+  void _showTimerDurationDialog() async {
+    // Wrap this in a loop to handle going back from player selection
+    TimerSelectionResult? result;
+    bool continueFlow = true;
+
+    while (continueFlow) {
+      // Show timer selection dialog
+      result = await showTimerDurationDialog(
+        context: context,
+        initialDuration: _gameState.timerDurationInSeconds,
+      );
+
+      if (!mounted) return; // Check if still mounted after async gap
+
+      if (result == null) {
+        // User cancelled the dialog
+        continueFlow = false;
+        continue;
+      }
+
+      if (result.useRandomSelection) {
+        // Use coin flip for random player selection
+        final startingPlayer = await showCoinFlipModal(context);
+
+        if (!mounted) return; // Check if still mounted after async gap
+
+        setState(() {
+          _gameState.startGameWithPlayer(result!.duration, startingPlayer);
+        });
+        continueFlow = false;
+      } else {
+        // Use manual player selection
+        final selectedPlayer = await showPlayerSelectionDialog(
+          context,
+          _gameState.timerDurationInSeconds,
+        );
+
+        if (!mounted) return; // Check if still mounted after async gap
+
+        if (selectedPlayer != null) {
+          // Player was selected, start the game
+          setState(() {
+            _gameState.startGameWithPlayer(result!.duration, selectedPlayer);
+          });
+          continueFlow = false;
+        }
+        // If selectedPlayer is null, we want to show the timer dialog again
+        // The loop will continue
+      }
+    }
+  }
+
+  // Switch player turn
+  void _switchTurn() {
+    setState(() {
+      _gameState.switchTurn();
+    });
+  }
+
+  // Handle timer timeout
+  void _setTimeout() {
+    setState(() {
+      _gameState.timerTimeout();
+    });
+  }
+
+  // Pause/resume timer
+  void _timerPause(bool isPaused) {
+    setState(() {
+      _gameState.setTimerPause(isPaused);
     });
   }
 
@@ -41,26 +176,43 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text("High Stakes - Gwent Board Tracker"),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              "You have pushed the button this many times:",
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Round tracker added here
+            if (_gameState.isGameStarted)
+              RoundTracker(
+                currentRound: _gameState.currentRound,
+                roundWinners: _gameState.roundWinners,
+              ),
+            const SizedBox(height: 8),
+
+            BoardSection(
+              currentPlayer: _gameState.currentPlayer,
+              isGameStarted: _gameState.isGameStarted,
             ),
-            Text(
-              "$_counter",
-              style: Theme.of(context).textTheme.headline4,
+            const SizedBox(height: 16),
+            Expanded(
+              child: TimerSection(
+                currentPlayer: _gameState.currentPlayer,
+                nextPlayer: _gameState.nextPlayer,
+                isGameStarted: _gameState.isGameStarted,
+                isTimeout: _gameState.isTimeout,
+                isManualPaused: _gameState.isManualPaused,
+                timerDurationInSeconds: _gameState.timerDurationInSeconds,
+                onStartOrEndGame: _startOrEndGame,
+                onSwitchTurn: _switchTurn,
+                onTimerTimeout: _setTimeout,
+                timerPause: _timerPause,
+                onPass: _playerPassedRound,
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: "Increment",
-        child: const Icon(Icons.add),
       ),
     );
   }
