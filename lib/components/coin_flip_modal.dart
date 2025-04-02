@@ -92,14 +92,18 @@ class _CoinFlipDialogState extends State<_CoinFlipDialog>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         Future.delayed(const Duration(milliseconds: 500), () {
-          setState(() {
-            _showResult = true;
-          });
+          if (mounted) {
+            setState(() {
+              _showResult = true;
+            });
 
-          // Auto-dismiss after showing result
-          Future.delayed(const Duration(milliseconds: 2000), () {
-            Navigator.of(context).pop();
-          });
+            // Auto-dismiss after showing result
+            Future.delayed(const Duration(milliseconds: 2000), () {
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
+            });
+          }
         });
       }
     });

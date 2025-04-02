@@ -13,6 +13,8 @@ class TimerSection extends StatelessWidget {
   final VoidCallback onTimerTimeout;
   final void Function(bool) timerPause;
   final VoidCallback onPass; // New callback for PASS button
+  final void Function(int pausedTime)
+      onTimerPause; // New callback for paused time
 
   const TimerSection({
     super.key,
@@ -27,6 +29,7 @@ class TimerSection extends StatelessWidget {
     required this.onTimerTimeout,
     required this.timerPause,
     required this.onPass, // Added parameter
+    required this.onTimerPause, // Added parameter
   });
 
   void _showPauseGameModal(BuildContext context) {
@@ -67,83 +70,83 @@ class TimerSection extends StatelessWidget {
   }
 
   void _showTimeoutOptions(BuildContext context) {
-    // Automatically show the dialog when in timeout state
     if (isTimeout) {
-      // Use a post-frame callback to avoid showing dialog during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext dialogContext) {
-            return Dialog(
-              insetPadding: EdgeInsets.zero,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Main container with rounded corners
-                  Container(
-                    width: 300,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          "Player $currentPlayer Timeout",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+        if (context.mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext dialogContext) {
+              return Dialog(
+                insetPadding: EdgeInsets.zero,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Main container with rounded corners
+                    Container(
+                      width: 300,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Player $currentPlayer Timeout",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            // Pass button changed to TextButton
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(dialogContext).pop();
-                                onPass(); // Trigger the pass logic
-                              },
-                              child: const Text(
-                                "Pass",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
+                          const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              // Pass button changed to TextButton
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(dialogContext).pop();
+                                  onPass(); // Trigger the pass logic
+                                },
+                                child: const Text(
+                                  "Pass",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red,
+                                  ),
                                 ),
                               ),
-                            ),
-                            // Continue button
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(dialogContext).pop();
-                                onSwitchTurn();
-                              },
-                              child: Text("Continue Player $nextPlayer"),
-                            ),
-                          ],
-                        ),
-                      ],
+                              // Continue button
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(dialogContext).pop();
+                                  onSwitchTurn();
+                                },
+                                child: Text("Continue Player $nextPlayer"),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
+                  ],
+                ),
+              );
+            },
+          );
+        }
       });
     }
   }
@@ -173,6 +176,7 @@ class TimerSection extends StatelessWidget {
                   isPaused: isTimeout || isManualPaused,
                   timerDurationInSeconds: timerDurationInSeconds,
                   onTimerReset: onTimerTimeout,
+                  onTimerPause: onTimerPause, // Pass paused time callback
                 ),
               ),
               IconButton(

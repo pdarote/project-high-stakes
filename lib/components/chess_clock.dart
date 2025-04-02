@@ -6,6 +6,8 @@ class ChessClock extends StatefulWidget {
   final bool isPaused;
   final int timerDurationInSeconds;
   final VoidCallback onTimerReset;
+  final void Function(int pausedTime)
+      onTimerPause; // New callback for paused time
 
   const ChessClock({
     super.key,
@@ -13,6 +15,7 @@ class ChessClock extends StatefulWidget {
     required this.isPaused,
     required this.timerDurationInSeconds,
     required this.onTimerReset,
+    required this.onTimerPause, // Added parameter
   });
 
   @override
@@ -40,6 +43,12 @@ class _ChessClockState extends State<ChessClock> {
     // Reset timer on player change
     if (oldWidget.currentPlayer != widget.currentPlayer) {
       _resetTimer();
+    }
+
+    // Save paused time when paused
+    if (widget.isPaused && !oldWidget.isPaused) {
+      widget.onTimerPause(
+          _timeLeftInMillis ~/ 1000); // Save paused time in seconds
     }
 
     _startTimerIfNeeded();
@@ -82,7 +91,7 @@ class _ChessClockState extends State<ChessClock> {
 
   @override
   void dispose() {
-    _cancelTimer();
+    _cancelTimer(); // Ensure timer is canceled
     super.dispose();
   }
 

@@ -45,7 +45,9 @@ class ToastNotification {
 
     if (_overlayEntry != null) {
       controller.reverse().then((_) {
-        _removeEntry();
+        if (_overlayEntry != null) {
+          _removeEntry();
+        }
       });
     }
   }

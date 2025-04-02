@@ -81,12 +81,14 @@ Future<TimerSelectionResult?> showTimerDurationDialog({
                       const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.of(context).pop(
-                            TimerSelectionResult(
-                              duration: selectedDuration,
-                              useRandomSelection: useRandomSelection,
-                            ),
-                          );
+                          if (Navigator.of(context).mounted) {
+                            Navigator.of(context).pop(
+                              TimerSelectionResult(
+                                duration: selectedDuration,
+                                useRandomSelection: useRandomSelection,
+                              ),
+                            );
+                          }
                         },
                         child: const Text("Start Game"),
                       ),

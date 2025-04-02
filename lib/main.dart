@@ -90,10 +90,12 @@ class _GameBoardState extends State<GameBoard>
             ? Colors.blue.shade800
             : Colors.red.shade800;
 
-        _toastNotification.show(
-          _gameState.gameResult!,
-          backgroundColor: toastColor,
-        );
+        if (mounted) {
+          _toastNotification.show(
+            _gameState.gameResult!,
+            backgroundColor: toastColor,
+          );
+        }
       }
     });
   }
@@ -194,6 +196,8 @@ class _GameBoardState extends State<GameBoard>
             BoardSection(
               currentPlayer: _gameState.currentPlayer,
               isGameStarted: _gameState.isGameStarted,
+              timerPause: _timerPause,
+              pausedTime: _gameState.pausedTime, // Pass paused time
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -209,6 +213,9 @@ class _GameBoardState extends State<GameBoard>
                 onTimerTimeout: _setTimeout,
                 timerPause: _timerPause,
                 onPass: _playerPassedRound,
+                onTimerPause: (pausedTime) {
+                  _gameState.savePausedTime(pausedTime); // Save paused time
+                },
               ),
             ),
           ],
