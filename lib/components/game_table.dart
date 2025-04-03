@@ -1,19 +1,19 @@
 import "package:flutter/material.dart";
-
-// Removed unnecessary GameState import
+import "package:provider/provider.dart";
+import "../providers/timer_provider.dart";
 
 class GameTable extends StatelessWidget {
   final int currentPlayer;
   final bool isGameStarted;
   final void Function(bool) timerPause;
-  final int? pausedTime; // Paused time is passed as an argument
+  final String? pausedTime; // Still kept for flexibility
 
   const GameTable({
     super.key,
     required this.currentPlayer,
     required this.isGameStarted,
     required this.timerPause,
-    required this.pausedTime, // Already passed here
+    this.pausedTime, // Made optional
   });
 
   @override
@@ -22,7 +22,7 @@ class GameTable extends StatelessWidget {
       currentPlayer: currentPlayer,
       isGameStarted: isGameStarted,
       timerPause: timerPause,
-      pausedTime: pausedTime, // Pass pausedTime to layout
+      pausedTime: pausedTime,
     );
   }
 }
@@ -31,13 +31,13 @@ class _GameTableLayout extends StatelessWidget {
   final int currentPlayer;
   final bool isGameStarted;
   final void Function(bool) timerPause;
-  final int? pausedTime; // Paused time is passed as an argument
+  final String? pausedTime;
 
   const _GameTableLayout({
     required this.currentPlayer,
     required this.isGameStarted,
     required this.timerPause,
-    required this.pausedTime, // Already passed here
+    required this.pausedTime,
   });
 
   @override
@@ -66,7 +66,7 @@ class _GameTableLayout extends StatelessWidget {
               unitSectionWidth: unitSectionWidth,
               sectionHeight: halfHeight,
               isTopSection: true,
-              pausedTime: pausedTime, // Pass pausedTime to player section
+              pausedTime: pausedTime,
             ),
             Positioned(
               top: halfHeight,
@@ -89,140 +89,12 @@ class _GameTableLayout extends StatelessWidget {
               unitSectionWidth: unitSectionWidth,
               sectionHeight: halfHeight,
               isTopSection: false,
-              pausedTime: pausedTime, // Pass pausedTime to player section
+              pausedTime: pausedTime,
             ),
           ],
         );
       },
     );
-  }
-
-  void _showCardSelectionModal(
-      BuildContext context, String rowType, int player) {
-    try {
-      timerPause(true); // Pause the timer when the modal is displayed
-    } catch (e) {
-      debugPrint("Error pausing timer: $e");
-    }
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          insetPadding: EdgeInsets.zero,
-          backgroundColor: Colors.white,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                margin: const EdgeInsets.all(16.0),
-                child: Text(
-                  "Play on $rowType (Player $player)",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              if (pausedTime != null)
-                Text(
-                  "Paused Time: ${_formatTime(pausedTime!)}", // Use local formatTime method
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 5,
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
-                    childAspectRatio: 65 / 100,
-                  ),
-                  itemCount: 10,
-                  itemBuilder: (context, index) {
-                    final cardNames = [
-                      "Weather",
-                      "Horn",
-                      "Common",
-                      "Bond",
-                      "Shield",
-                      "Clear",
-                      "Morale",
-                      "Hero",
-                      "Bond.H",
-                      "Morale.H"
-                    ];
-                    return _HoverDetector(
-                      builder: (context, isHovering) => GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          try {
-                            timerPause(false);
-                          } catch (e) {
-                            debugPrint("Error resuming timer: $e");
-                          }
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isHovering
-                                ? Colors.blue.shade300
-                                : Colors.blue.shade100,
-                            borderRadius: BorderRadius.circular(8.0),
-                            border: Border.all(color: Colors.blue.shade700),
-                          ),
-                          child: Center(
-                            child: Text(
-                              cardNames[index],
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.all(16.0),
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    try {
-                      timerPause(false);
-                    } catch (e) {
-                      debugPrint("Error resuming timer: $e");
-                    }
-                  },
-                  child: const Text(
-                    "Cancel",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  String _formatTime(int seconds) {
-    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
-    final secs = (seconds % 60).toString().padLeft(2, '0');
-    final millis = ((seconds % 1) * 1000).toInt().toString().padLeft(1, '0');
-    return "$minutes:$secs.$millis";
   }
 }
 
@@ -238,7 +110,7 @@ class _PlayerSection extends StatelessWidget {
   final double unitSectionWidth;
   final double sectionHeight;
   final bool isTopSection;
-  final int? pausedTime; // Added pausedTime parameter
+  final String? pausedTime;
 
   const _PlayerSection({
     required this.player,
@@ -252,7 +124,7 @@ class _PlayerSection extends StatelessWidget {
     required this.unitSectionWidth,
     required this.sectionHeight,
     required this.isTopSection,
-    required this.pausedTime, // Added parameter
+    required this.pausedTime,
   });
 
   @override
@@ -274,7 +146,7 @@ class _PlayerSection extends StatelessWidget {
             isHighlighted: isGameStarted && isCurrentPlayer,
             rowTypes: rowTypes,
             timerPause: timerPause,
-            pausedTime: pausedTime, // Pass pausedTime to unit section
+            pausedTime: pausedTime,
           ),
         ),
         Positioned(
@@ -345,7 +217,7 @@ class _UnitSection extends StatelessWidget {
   final bool isHighlighted;
   final List<String> rowTypes;
   final void Function(bool) timerPause;
-  final int? pausedTime; // Added pausedTime parameter
+  final String? pausedTime;
 
   const _UnitSection({
     required this.player,
@@ -353,7 +225,7 @@ class _UnitSection extends StatelessWidget {
     required this.isHighlighted,
     required this.rowTypes,
     required this.timerPause,
-    required this.pausedTime, // Added parameter
+    required this.pausedTime,
   });
 
   @override
@@ -383,6 +255,7 @@ class _UnitSection extends StatelessWidget {
                           context,
                           rowTypes[i],
                           player,
+                          pausedTime,
                         )
                     : null,
                 child: Container(
@@ -412,131 +285,132 @@ class _UnitSection extends StatelessWidget {
   }
 
   void _showCardSelectionModal(
-      BuildContext context, String rowType, int player) {
-    try {
-      timerPause(true); // Pause the timer when the modal is displayed
-    } catch (e) {
-      debugPrint("Error pausing timer: $e");
-    }
+      BuildContext context, String rowType, int player, String? pausedTime) {
+    // Schedule the pause to happen after the current frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        timerPause(true);
+      } catch (e) {
+        debugPrint("Error pausing timer: $e");
+      }
+    });
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return Dialog(
-          insetPadding: EdgeInsets.zero,
-          backgroundColor: Colors.white,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                margin: const EdgeInsets.all(16.0),
-                child: Text(
-                  "Play on $rowType (Player $player)",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+        return Consumer<TimerProvider>(
+          builder: (context, timerProvider, child) {
+            return Dialog(
+              insetPadding: EdgeInsets.zero,
+              backgroundColor: Colors.white,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.all(16.0),
+                    child: Text(
+                      "Play on $rowType (Player $player)",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              if (pausedTime != null)
-                Text(
-                  "Paused Time: ${_formatTime(pausedTime!)}", // Use local formatTime method
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
+                  Text(
+                    "Paused Time: ${timerProvider.formattedTime}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
                   ),
-                ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 5,
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
-                    childAspectRatio: 65 / 100,
-                  ),
-                  itemCount: 10,
-                  itemBuilder: (context, index) {
-                    final cardNames = [
-                      "Weather",
-                      "Horn",
-                      "Common",
-                      "Bond",
-                      "Shield",
-                      "Clear",
-                      "Morale",
-                      "Hero",
-                      "Bond.H",
-                      "Morale.H"
-                    ];
-                    return _HoverDetector(
-                      builder: (context, isHovering) => GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          try {
-                            timerPause(false);
-                          } catch (e) {
-                            debugPrint("Error resuming timer: $e");
-                          }
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isHovering
-                                ? Colors.blue.shade300
-                                : Colors.blue.shade100,
-                            borderRadius: BorderRadius.circular(8.0),
-                            border: Border.all(color: Colors.blue.shade700),
-                          ),
-                          child: Center(
-                            child: Text(
-                              cardNames[index],
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: GridView.builder(
+                      padding: const EdgeInsets.all(16.0),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 5,
+                        crossAxisSpacing: 8.0,
+                        mainAxisSpacing: 8.0,
+                        childAspectRatio: 65 / 100,
+                      ),
+                      itemCount: 10,
+                      itemBuilder: (context, index) {
+                        final cardNames = [
+                          "Weather",
+                          "Horn",
+                          "Common",
+                          "Bond",
+                          "Shield",
+                          "Clear",
+                          "Morale",
+                          "Hero",
+                          "Bond.H",
+                          "Morale.H"
+                        ];
+                        return _HoverDetector(
+                          builder: (context, isHovering) => GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              try {
+                                timerPause(false);
+                              } catch (e) {
+                                debugPrint("Error resuming timer: $e");
+                              }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: isHovering
+                                    ? Colors.blue.shade300
+                                    : Colors.blue.shade100,
+                                borderRadius: BorderRadius.circular(8.0),
+                                border: Border.all(color: Colors.blue.shade700),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  cardNames[index],
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        );
+                      },
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.all(16.0),
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
                       ),
-                    );
-                  },
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.all(16.0),
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        try {
+                          timerPause(false);
+                        } catch (e) {
+                          debugPrint("Error resuming timer: $e");
+                        }
+                      },
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    try {
-                      timerPause(false);
-                    } catch (e) {
-                      debugPrint("Error resuming timer: $e");
-                    }
-                  },
-                  child: const Text(
-                    "Cancel",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
-  }
-
-  String _formatTime(int seconds) {
-    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
-    final secs = (seconds % 60).toString().padLeft(2, '0');
-    final millis = ((seconds % 1) * 1000).toInt().toString().padLeft(1, '0');
-    return "$minutes:$secs.$millis";
   }
 }
 

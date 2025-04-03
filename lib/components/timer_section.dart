@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "chess_clock.dart";
 
-class TimerSection extends StatelessWidget {
+class TimerSection extends StatefulWidget {
   final int currentPlayer;
   final int nextPlayer;
   final bool isGameStarted;
@@ -12,9 +12,7 @@ class TimerSection extends StatelessWidget {
   final VoidCallback onSwitchTurn;
   final VoidCallback onTimerTimeout;
   final void Function(bool) timerPause;
-  final VoidCallback onPass; // New callback for PASS button
-  final void Function(int pausedTime)
-      onTimerPause; // New callback for paused time
+  final VoidCallback onPass;
 
   const TimerSection({
     super.key,
@@ -28,14 +26,49 @@ class TimerSection extends StatelessWidget {
     required this.onSwitchTurn,
     required this.onTimerTimeout,
     required this.timerPause,
-    required this.onPass, // Added parameter
-    required this.onTimerPause, // Added parameter
+    required this.onPass,
   });
 
-  void _showPauseGameModal(BuildContext context) {
-    if (!isTimeout) {
-      timerPause(true); // Pause the timer before showing the dialog
+  @override
+  State<TimerSection> createState() => _TimerSectionState();
+}
+
+class _TimerSectionState extends State<TimerSection> {
+  bool _timeoutDialogShown = false;
+
+  @override
+  void didUpdateWidget(TimerSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Check if timeout status changed
+    if (widget.isTimeout && !oldWidget.isTimeout) {
+      _handleTimeout();
+    } else if (!widget.isTimeout && oldWidget.isTimeout) {
+      _timeoutDialogShown = false;
     }
+  }
+
+  void _handleTimeout() {
+    if (!_timeoutDialogShown) {
+      _timeoutDialogShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showTimeoutOptions();
+        }
+      });
+    }
+  }
+
+  void _showPauseGameModal() {
+    if (!widget.isTimeout) {
+      // Use post-frame callback for safer state changes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          widget.timerPause(true);
+        }
+      });
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -46,8 +79,8 @@ class TimerSection extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                onStartOrEndGame(); // End the game
                 Navigator.of(context).pop();
+                widget.onStartOrEndGame();
               },
               child: const Text(
                 "End Game",
@@ -56,12 +89,12 @@ class TimerSection extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                if (!isTimeout) {
-                  timerPause(false); // Continue the timer if paused
-                }
                 Navigator.of(context).pop();
+                if (!widget.isTimeout) {
+                  widget.timerPause(false);
+                }
               },
-              child: const Text("Resume"), // Fixed button label
+              child: const Text("Resume"),
             ),
           ],
         );
@@ -69,93 +102,86 @@ class TimerSection extends StatelessWidget {
     );
   }
 
-  void _showTimeoutOptions(BuildContext context) {
-    if (isTimeout) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext dialogContext) {
-              return Dialog(
-                insetPadding: EdgeInsets.zero,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
+  void _showTimeoutOptions() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          insetPadding: EdgeInsets.zero,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 300,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
+                  ],
+                ),
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Main container with rounded corners
-                    Container(
-                      width: 300,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          )
-                        ],
+                    Text(
+                      "Player ${widget.currentPlayer} Timeout",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Player $currentPlayer Timeout",
-                            style: const TextStyle(
-                              fontSize: 20,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(dialogContext).pop();
+                            widget.onPass();
+                          },
+                          child: const Text(
+                            "Pass",
+                            style: TextStyle(
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
+                              color: Colors.red,
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              // Pass button changed to TextButton
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(dialogContext).pop();
-                                  onPass(); // Trigger the pass logic
-                                },
-                                child: const Text(
-                                  "Pass",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ),
-                              // Continue button
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(dialogContext).pop();
-                                  onSwitchTurn();
-                                },
-                                child: Text("Continue Player $nextPlayer"),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(dialogContext).pop();
+                            widget.onSwitchTurn();
+                          },
+                          child: Text("Continue Player ${widget.nextPlayer}"),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              );
-            },
-          );
-        }
-      });
-    }
+              ),
+            ],
+          ),
+        );
+      },
+    ).then((_) {
+      // Reset the dialog shown flag when dialog is dismissed
+      if (mounted) {
+        _timeoutDialogShown = false;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show timeout dialog when in timeout state
-    _showTimeoutOptions(context);
-
     // Define a consistent button style to use for all buttons
     final buttonStyle = ElevatedButton.styleFrom(
       textStyle: const TextStyle(
@@ -167,20 +193,20 @@ class TimerSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (isGameStarted)
+        if (widget.isGameStarted)
           Row(
             children: [
               Expanded(
                 child: ChessClock(
-                  currentPlayer: currentPlayer,
-                  isPaused: isTimeout || isManualPaused,
-                  timerDurationInSeconds: timerDurationInSeconds,
-                  onTimerReset: onTimerTimeout,
-                  onTimerPause: onTimerPause, // Pass paused time callback
+                  currentPlayer: widget.currentPlayer,
+                  isPaused: widget.isTimeout || widget.isManualPaused,
+                  timerDurationInSeconds: widget.timerDurationInSeconds,
+                  onTimerReset: widget.onTimerTimeout,
+                  onTimerPause: widget.timerPause,
                 ),
               ),
               IconButton(
-                onPressed: () => _showPauseGameModal(context),
+                onPressed: () => _showPauseGameModal(),
                 icon: const Icon(Icons.pause, color: Colors.grey),
                 tooltip: "Pause",
               ),
@@ -189,40 +215,39 @@ class TimerSection extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Button section
-        if (!isGameStarted)
+        if (!widget.isGameStarted)
           SizedBox(
             height: 60,
             child: ElevatedButton(
-              onPressed: onStartOrEndGame,
-              style: buttonStyle, // Using consistent style
+              onPressed: widget.onStartOrEndGame,
+              style: buttonStyle,
               child: const Text("START GAME"),
             ),
           )
-        else if (!isTimeout)
+        else if (!widget.isTimeout)
           Column(
             children: [
               SizedBox(
                 height: 60,
                 child: ElevatedButton(
-                  onPressed: onSwitchTurn,
-                  style: buttonStyle, // Using consistent style
+                  onPressed: widget.onSwitchTurn,
+                  style: buttonStyle,
                   child: const Text("END TURN"),
                 ),
               ),
               const SizedBox(height: 10),
               SizedBox(
-                height: 60, // Changed from 50 to 60 for consistency
+                height: 60,
                 child: ElevatedButton(
-                  onPressed: onPass,
-                  style: buttonStyle, // Using consistent style
-                  child:
-                      const Text("PASS"), // Changed from "PASS ROUND" to "PASS"
+                  onPressed: widget.onPass,
+                  style: buttonStyle,
+                  child: const Text("PASS"),
                 ),
               ),
             ],
           )
         else
-          const SizedBox(), // Empty widget when in timeout
+          const SizedBox(),
       ],
     );
   }

@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
 import "components/board_section.dart";
 import "components/timer_section.dart";
 import "components/timer_selection_dialog.dart";
@@ -6,9 +7,15 @@ import "components/coin_flip_modal.dart";
 import "components/round_tracker.dart";
 import "utils/toast_notification.dart";
 import "game/game_state.dart";
+import "providers/timer_provider.dart";
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider<TimerProvider>(
+      create: (context) => TimerProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -81,11 +88,9 @@ class _GameBoardState extends State<GameBoard>
   // Handle player passing a round
   void _playerPassedRound() {
     setState(() {
-      // GameState updated in passRound method
       final bool gameEnded = _gameState.passRound();
 
       if (gameEnded && _gameState.gameResult != null) {
-        // Game ended due to a player winning or a tie
         final Color toastColor = _gameState.winningPlayer == 1
             ? Colors.blue.shade800
             : Colors.red.shade800;
@@ -102,53 +107,52 @@ class _GameBoardState extends State<GameBoard>
 
   // Show dialog to select timer duration then start game
   void _showTimerDurationDialog() async {
-    // Wrap this in a loop to handle going back from player selection
     TimerSelectionResult? result;
     bool continueFlow = true;
 
     while (continueFlow) {
-      // Show timer selection dialog
       result = await showTimerDurationDialog(
         context: context,
         initialDuration: _gameState.timerDurationInSeconds,
       );
 
-      if (!mounted) return; // Check if still mounted after async gap
+      if (!mounted) return;
 
       if (result == null) {
-        // User cancelled the dialog
         continueFlow = false;
         continue;
       }
 
+      // Update the timer duration in the provider
+      if (result.duration != _gameState.timerDurationInSeconds) {
+        final timerProvider =
+            Provider.of<TimerProvider>(context, listen: false);
+        timerProvider.setTimerDuration(result.duration);
+      }
+
       if (result.useRandomSelection) {
-        // Use coin flip for random player selection
         final startingPlayer = await showCoinFlipModal(context);
 
-        if (!mounted) return; // Check if still mounted after async gap
+        if (!mounted) return;
 
         setState(() {
           _gameState.startGameWithPlayer(result!.duration, startingPlayer);
         });
         continueFlow = false;
       } else {
-        // Use manual player selection
         final selectedPlayer = await showPlayerSelectionDialog(
           context,
           _gameState.timerDurationInSeconds,
         );
 
-        if (!mounted) return; // Check if still mounted after async gap
+        if (!mounted) return;
 
         if (selectedPlayer != null) {
-          // Player was selected, start the game
           setState(() {
             _gameState.startGameWithPlayer(result!.duration, selectedPlayer);
           });
           continueFlow = false;
         }
-        // If selectedPlayer is null, we want to show the timer dialog again
-        // The loop will continue
       }
     }
   }
@@ -165,13 +169,33 @@ class _GameBoardState extends State<GameBoard>
     setState(() {
       _gameState.timerTimeout();
     });
+
+    // Also update the timer provider
+    final timerProvider = Provider.of<TimerProvider>(context, listen: false);
+    timerProvider.setPaused(true);
   }
 
-  // Pause/resume timer
+  // Pause/resume timer - MODIFIED TO BE SAFE FOR BUILD-TIME CALLS
   void _timerPause(bool isPaused) {
-    setState(() {
-      _gameState.setTimerPause(isPaused);
-    });
+    // Safely update game state
+    if (_gameState.isManualPaused != isPaused) {
+      // Use post-frame callback to avoid setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _gameState.setTimerPause(isPaused);
+          });
+        }
+      });
+    }
+
+    // Safely update timer provider - this is ok during build since we're not calling setState
+    try {
+      final timerProvider = Provider.of<TimerProvider>(context, listen: false);
+      timerProvider.setPaused(isPaused);
+    } catch (e) {
+      debugPrint("Error updating timer provider: $e");
+    }
   }
 
   @override
@@ -197,7 +221,7 @@ class _GameBoardState extends State<GameBoard>
               currentPlayer: _gameState.currentPlayer,
               isGameStarted: _gameState.isGameStarted,
               timerPause: _timerPause,
-              pausedTime: _gameState.pausedTime, // Pass paused time
+              // No need to pass pausedTime as we're using the provider
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -213,9 +237,6 @@ class _GameBoardState extends State<GameBoard>
                 onTimerTimeout: _setTimeout,
                 timerPause: _timerPause,
                 onPass: _playerPassedRound,
-                onTimerPause: (pausedTime) {
-                  _gameState.savePausedTime(pausedTime); // Save paused time
-                },
               ),
             ),
           ],

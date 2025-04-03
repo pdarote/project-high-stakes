@@ -8,7 +8,6 @@ class GameState {
   int timerDurationInSeconds = 60;
   String? gameResult;
   int? winningPlayer;
-  int? pausedTime; // New field to store paused time
 
   // Round tracking
   int currentRound = 1;
@@ -159,18 +158,5 @@ class GameState {
   // Pause or resume the timer
   void setTimerPause(bool isPaused) {
     isManualPaused = isPaused;
-  }
-
-  // Save the paused time
-  void savePausedTime(int time) {
-    pausedTime = time;
-  }
-
-  /// Format time in seconds to MM:SS.ms format
-  String formatTime(int seconds) {
-    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
-    final secs = (seconds % 60).toString().padLeft(2, '0');
-    final millis = ((seconds % 1) * 1000).toInt().toString().padLeft(1, '0');
-    return "$minutes:$secs.$millis";
   }
 }

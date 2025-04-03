@@ -1,13 +1,14 @@
 import "package:flutter/material.dart";
 import "dart:async";
+import "package:provider/provider.dart";
+import "../providers/timer_provider.dart";
 
 class ChessClock extends StatefulWidget {
   final int currentPlayer;
   final bool isPaused;
   final int timerDurationInSeconds;
   final VoidCallback onTimerReset;
-  final void Function(int pausedTime)
-      onTimerPause; // New callback for paused time
+  final void Function(bool) onTimerPause;
 
   const ChessClock({
     super.key,
@@ -15,23 +16,55 @@ class ChessClock extends StatefulWidget {
     required this.isPaused,
     required this.timerDurationInSeconds,
     required this.onTimerReset,
-    required this.onTimerPause, // Added parameter
+    required this.onTimerPause,
   });
 
   @override
   State<ChessClock> createState() => _ChessClockState();
+
+  /// Public method to format time in MM:SS.ms format
+  static String formatTime(int milliseconds) {
+    final minutes = (milliseconds ~/ 60000).toString().padLeft(2, "0");
+    final seconds = ((milliseconds % 60000) ~/ 1000).toString().padLeft(2, "0");
+    final centiseconds = ((milliseconds % 1000) ~/ 100).toString();
+    return "$minutes:$seconds.$centiseconds";
+  }
 }
 
 class _ChessClockState extends State<ChessClock> {
   Timer? _timer;
   late int _timeLeftInMillis;
   static const int _updateIntervalMs = 100;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _resetTimer();
-    _startTimerIfNeeded();
+    _timeLeftInMillis = widget.timerDurationInSeconds * 1000;
+
+    // Defer provider updates until after the first build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _safelyUpdateProvider();
+        _startTimerIfNeeded();
+        _isInitialized = true;
+      }
+    });
+  }
+
+  void _safelyUpdateProvider() {
+    // Schedule provider updates for after the current build cycle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        try {
+          final timerProvider =
+              Provider.of<TimerProvider>(context, listen: false);
+          timerProvider.updateTimeLeft(_timeLeftInMillis);
+        } catch (e) {
+          debugPrint("Error updating timer provider: $e");
+        }
+      }
+    });
   }
 
   @override
@@ -42,22 +75,34 @@ class _ChessClockState extends State<ChessClock> {
 
     // Reset timer on player change
     if (oldWidget.currentPlayer != widget.currentPlayer) {
-      _resetTimer();
+      _timeLeftInMillis = widget.timerDurationInSeconds * 1000;
+
+      // All provider updates are now safely deferred
+      if (_isInitialized) {
+        _safelyUpdateProvider();
+      }
     }
 
-    // Save paused time when paused
+    // Pause the timer
     if (widget.isPaused && !oldWidget.isPaused) {
-      widget.onTimerPause(
-          _timeLeftInMillis ~/ 1000); // Save paused time in seconds
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          widget.onTimerPause(true);
+
+          if (_isInitialized) {
+            try {
+              final timerProvider =
+                  Provider.of<TimerProvider>(context, listen: false);
+              timerProvider.setPaused(true);
+            } catch (e) {
+              debugPrint("Error updating pause state: $e");
+            }
+          }
+        }
+      });
     }
 
     _startTimerIfNeeded();
-  }
-
-  void _resetTimer() {
-    setState(() {
-      _timeLeftInMillis = widget.timerDurationInSeconds * 1000;
-    });
   }
 
   void _cancelTimer() {
@@ -72,6 +117,21 @@ class _ChessClockState extends State<ChessClock> {
   }
 
   void _startTimer() {
+    // Only try to access the provider if we're initialized and after the build
+    if (_isInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          try {
+            final timerProvider =
+                Provider.of<TimerProvider>(context, listen: false);
+            timerProvider.setPaused(false);
+          } catch (e) {
+            debugPrint("Error setting timer state: $e");
+          }
+        }
+      });
+    }
+
     _timer = Timer.periodic(
       const Duration(milliseconds: _updateIntervalMs),
       (Timer timer) {
@@ -80,10 +140,31 @@ class _ChessClockState extends State<ChessClock> {
             timer.cancel();
             widget.onTimerReset();
           });
+
+          if (_isInitialized) {
+            try {
+              final timerProvider =
+                  Provider.of<TimerProvider>(context, listen: false);
+              timerProvider.setPaused(true);
+              timerProvider.updateTimeLeft(0);
+            } catch (e) {
+              debugPrint("Error updating provider on timer completion: $e");
+            }
+          }
         } else {
           setState(() {
             _timeLeftInMillis -= _updateIntervalMs;
           });
+
+          if (_isInitialized) {
+            try {
+              final timerProvider =
+                  Provider.of<TimerProvider>(context, listen: false);
+              timerProvider.updateTimeLeft(_timeLeftInMillis);
+            } catch (e) {
+              debugPrint("Error updating time: $e");
+            }
+          }
         }
       },
     );
@@ -95,20 +176,17 @@ class _ChessClockState extends State<ChessClock> {
     super.dispose();
   }
 
-  String _formatTime(int milliseconds) {
-    final minutes = (milliseconds ~/ 60000).toString().padLeft(2, '0');
-    final seconds = ((milliseconds % 60000) ~/ 1000).toString().padLeft(2, '0');
-    final centiseconds = ((milliseconds % 1000) ~/ 100).toString();
-    return "$minutes:$seconds.$centiseconds";
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Text(
-        "Time Left: ${_formatTime(_timeLeftInMillis)}",
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      child: Consumer<TimerProvider>(
+        builder: (context, timerProvider, child) {
+          return Text(
+            "Time Left: ${timerProvider.formattedTime}",
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          );
+        },
       ),
     );
   }
