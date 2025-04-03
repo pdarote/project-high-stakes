@@ -12,81 +12,122 @@ class RoundTracker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Calculate how many rounds each player has lost
+    int player1LostRounds = roundWinners.where((winner) => winner == 2).length;
+    int player2LostRounds = roundWinners.where((winner) => winner == 1).length;
+
+    // Use MaterialColors instead of regular Colors
+    final player1Color = Colors.blue;
+    final player2Color = Colors.red;
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(10.0),
         border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 3,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildRoundIndicator(1, roundWinners[0]),
-              const SizedBox(width: 12),
-              _buildRoundIndicator(2, roundWinners[1]),
-              const SizedBox(width: 12),
-              _buildRoundIndicator(3, roundWinners[2]),
-            ],
+          const Text(
+            "PLAYER HEALTH",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Player 2 health row (top)
+          _buildPlayerHealthRow(
+            playerNumber: 2,
+            lostRounds: player2LostRounds,
+            isPlaying: currentRound <= 3 && player2LostRounds < 2,
+            baseColor: player2Color,
+            textColor: player2Color.shade800,
+          ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 6.0),
+            child: Divider(height: 1, thickness: 1, color: Colors.grey),
+          ),
+
+          // Player 1 health row (bottom)
+          _buildPlayerHealthRow(
+            playerNumber: 1,
+            lostRounds: player1LostRounds,
+            isPlaying: currentRound <= 3 && player1LostRounds < 2,
+            baseColor: player1Color,
+            textColor: player1Color.shade800,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRoundIndicator(int roundNumber, int? winner) {
-    Color backgroundColor;
-    Color borderColor;
-
-    if (winner == null) {
-      // Not decided yet
-      backgroundColor = roundNumber == currentRound
-          ? Colors.yellow.shade100 // Current round
-          : Colors.grey.shade200; // Future round
-      borderColor = roundNumber == currentRound
-          ? Colors.yellow.shade700
-          : Colors.grey.shade400;
-    } else if (winner == 1) {
-      // Player 1 won
-      backgroundColor = Colors.blue.shade100;
-      borderColor = Colors.blue.shade700;
-    } else {
-      // Player 2 won
-      backgroundColor = Colors.red.shade100;
-      borderColor = Colors.red.shade700;
-    }
-
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: borderColor, width: 2),
-      ),
-      child: Center(
-        child: winner != null
-            ? Text(
-                winner.toString(),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color:
-                      winner == 1 ? Colors.blue.shade800 : Colors.red.shade800,
-                ),
-              )
-            : Text(
-                roundNumber.toString(),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: roundNumber == currentRound
-                      ? Colors.orange.shade800
-                      : Colors.grey.shade600,
-                ),
+  Widget _buildPlayerHealthRow({
+    required int playerNumber,
+    required int lostRounds,
+    required bool isPlaying,
+    required MaterialColor baseColor,
+    required Color textColor,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Player label
+        Row(
+          children: [
+            Icon(
+              Icons.person,
+              size: 16,
+              color: isPlaying ? baseColor : Colors.grey,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              "PLAYER $playerNumber",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isPlaying ? textColor : Colors.grey,
               ),
+            ),
+          ],
+        ),
+
+        // Health indicators
+        Row(
+          children: [
+            _buildHealthIndicator(lostRounds < 1, baseColor, textColor),
+            const SizedBox(width: 8),
+            _buildHealthIndicator(lostRounds < 2, baseColor, textColor),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHealthIndicator(
+      bool isFilled, MaterialColor baseColor, Color borderColor) {
+    return Container(
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isFilled ? baseColor : Colors.transparent,
+        border: Border.all(
+          color: isFilled ? borderColor : Colors.grey,
+          width: 2,
+        ),
       ),
     );
   }
