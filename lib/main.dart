@@ -4,7 +4,8 @@ import "components/board_section.dart";
 import "components/timer_section.dart";
 import "components/timer_selection_dialog.dart";
 import "components/coin_flip_modal.dart";
-import "components/player_health_tracker.dart"; // New import
+import "components/player_health_tracker.dart";
+import "components/round_indicator.dart"; // New import
 import "utils/toast_notification.dart";
 import "game/game_state.dart";
 import "providers/timer_provider.dart";
@@ -209,12 +210,25 @@ class _GameBoardState extends State<GameBoard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Round indicator - now always shown
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: RoundIndicator(
+                currentRound: _gameState.currentRound,
+                roundWinners: _gameState.roundWinners,
+                isGameStarted: _gameState.isGameStarted,
+              ),
+            ),
+
             // Player 2 (top player) health tracker
             PlayerHealthTracker(
               playerNumber: 2,
               isGameStarted: _gameState.isGameStarted,
               lostRounds:
                   _gameState.roundWinners.where((winner) => winner == 1).length,
+              firstPlayerToPassed: _gameState.firstPlayerToPassed,
+              currentRound: _gameState.currentRound,
+              hasPassed: _gameState.player2Passed, // Add this line
             ),
             const SizedBox(height: 8),
 
@@ -232,6 +246,9 @@ class _GameBoardState extends State<GameBoard>
               isGameStarted: _gameState.isGameStarted,
               lostRounds:
                   _gameState.roundWinners.where((winner) => winner == 2).length,
+              firstPlayerToPassed: _gameState.firstPlayerToPassed,
+              currentRound: _gameState.currentRound,
+              hasPassed: _gameState.player1Passed, // Add this line
             ),
 
             const SizedBox(height: 16),

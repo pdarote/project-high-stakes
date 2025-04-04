@@ -18,6 +18,7 @@ class GameState {
   ]; // null means round not decided yet
   bool player1Passed = false;
   bool player2Passed = false;
+  int? firstPlayerToPassed; // Track the first player to pass in a round
 
   // Round stats
   int roundsWonByPlayer1 = 0;
@@ -38,6 +39,7 @@ class GameState {
     roundWinners = [null, null, null];
     player1Passed = false;
     player2Passed = false;
+    firstPlayerToPassed = null;
     roundsWonByPlayer1 = 0;
     roundsWonByPlayer2 = 0;
   }
@@ -54,6 +56,7 @@ class GameState {
     roundWinners = [null, null, null];
     player1Passed = false;
     player2Passed = false;
+    firstPlayerToPassed = null;
     roundsWonByPlayer1 = 0;
     roundsWonByPlayer2 = 0;
   }
@@ -74,6 +77,7 @@ class GameState {
     roundWinners = [null, null, null];
     player1Passed = false;
     player2Passed = false;
+    firstPlayerToPassed = null;
     roundsWonByPlayer1 = 0;
     roundsWonByPlayer2 = 0;
   }
@@ -87,11 +91,23 @@ class GameState {
       player2Passed = true;
     }
 
+    // If this is the first player to pass in this round, record it
+    if (firstPlayerToPassed == null) {
+      firstPlayerToPassed = currentPlayer;
+    }
+
     // Reset the timeout flag to prevent the modal from reappearing
     isTimeout = false;
 
-    // If only one player has passed, the other player wins the round
-    return _endRound(nextPlayer); // The other player wins
+    // If both players have passed, end the round
+    if (player1Passed && player2Passed) {
+      // The first player to pass loses the round
+      return _endRound(firstPlayerToPassed == 1 ? 2 : 1);
+    }
+
+    // If only one player has passed, switch to the other player
+    switchTurn();
+    return false; // Game not over yet, continue playing
   }
 
   // End the current round with the given winner
@@ -116,6 +132,7 @@ class GameState {
     currentRound++;
     player1Passed = false;
     player2Passed = false;
+    firstPlayerToPassed = null; // Reset for the new round
     currentPlayer = winner; // Winner of the round starts the next round
     nextPlayer = winner == 1 ? 2 : 1;
 
