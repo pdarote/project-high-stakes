@@ -7,12 +7,18 @@ class BoardSection extends StatelessWidget {
   final int currentPlayer;
   final bool isGameStarted;
   final void Function(bool) timerPause;
+  final bool player1Passed;
+  final bool player2Passed;
+  final VoidCallback onCardPlayed;
 
   const BoardSection({
     super.key,
     required this.currentPlayer,
     required this.isGameStarted,
     required this.timerPause,
+    required this.player1Passed,
+    required this.player2Passed,
+    required this.onCardPlayed,
   });
 
   @override

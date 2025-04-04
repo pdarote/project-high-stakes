@@ -199,6 +199,15 @@ class _GameBoardState extends State<GameBoard>
     }
   }
 
+  // Handle card played event
+  void _handleCardPlayed() {
+    // Only switch turns if the opponent hasn't passed
+    if (_gameState.currentPlayer == 1 && !_gameState.player2Passed ||
+        _gameState.currentPlayer == 2 && !_gameState.player1Passed) {
+      _switchTurn();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -236,6 +245,9 @@ class _GameBoardState extends State<GameBoard>
               currentPlayer: _gameState.currentPlayer,
               isGameStarted: _gameState.isGameStarted,
               timerPause: _timerPause,
+              player1Passed: _gameState.player1Passed,
+              player2Passed: _gameState.player2Passed,
+              onCardPlayed: _handleCardPlayed,
             ),
 
             const SizedBox(height: 8),
@@ -265,6 +277,8 @@ class _GameBoardState extends State<GameBoard>
                 onTimerTimeout: _setTimeout,
                 timerPause: _timerPause,
                 onPass: _playerPassedRound,
+                player1Passed: _gameState.player1Passed,
+                player2Passed: _gameState.player2Passed,
               ),
             ),
           ],

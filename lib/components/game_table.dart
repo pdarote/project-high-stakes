@@ -6,14 +6,18 @@ class GameTable extends StatelessWidget {
   final int currentPlayer;
   final bool isGameStarted;
   final void Function(bool) timerPause;
-  final String? pausedTime; // Still kept for flexibility
+  final String? pausedTime;
+  final bool opponentPassed;
+  final VoidCallback? onCardPlayed;
 
   const GameTable({
     super.key,
     required this.currentPlayer,
     required this.isGameStarted,
     required this.timerPause,
-    this.pausedTime, // Made optional
+    this.pausedTime,
+    this.opponentPassed = false,
+    this.onCardPlayed,
   });
 
   @override
@@ -23,6 +27,8 @@ class GameTable extends StatelessWidget {
       isGameStarted: isGameStarted,
       timerPause: timerPause,
       pausedTime: pausedTime,
+      opponentPassed: opponentPassed,
+      onCardPlayed: onCardPlayed,
     );
   }
 }
@@ -32,12 +38,16 @@ class _GameTableLayout extends StatelessWidget {
   final bool isGameStarted;
   final void Function(bool) timerPause;
   final String? pausedTime;
+  final bool opponentPassed;
+  final VoidCallback? onCardPlayed;
 
   const _GameTableLayout({
     required this.currentPlayer,
     required this.isGameStarted,
     required this.timerPause,
     required this.pausedTime,
+    this.opponentPassed = false,
+    this.onCardPlayed,
   });
 
   @override
@@ -67,6 +77,8 @@ class _GameTableLayout extends StatelessWidget {
               sectionHeight: halfHeight,
               isTopSection: true,
               pausedTime: pausedTime,
+              opponentPassed: currentPlayer == 2 && opponentPassed,
+              onCardPlayed: onCardPlayed,
             ),
             Positioned(
               top: halfHeight,
@@ -90,6 +102,8 @@ class _GameTableLayout extends StatelessWidget {
               sectionHeight: halfHeight,
               isTopSection: false,
               pausedTime: pausedTime,
+              opponentPassed: currentPlayer == 1 && opponentPassed,
+              onCardPlayed: onCardPlayed,
             ),
           ],
         );
@@ -111,6 +125,8 @@ class _PlayerSection extends StatelessWidget {
   final double sectionHeight;
   final bool isTopSection;
   final String? pausedTime;
+  final bool opponentPassed;
+  final VoidCallback? onCardPlayed;
 
   const _PlayerSection({
     required this.player,
@@ -125,6 +141,8 @@ class _PlayerSection extends StatelessWidget {
     required this.sectionHeight,
     required this.isTopSection,
     required this.pausedTime,
+    this.opponentPassed = false,
+    this.onCardPlayed,
   });
 
   @override
@@ -147,6 +165,8 @@ class _PlayerSection extends StatelessWidget {
             rowTypes: rowTypes,
             timerPause: timerPause,
             pausedTime: pausedTime,
+            opponentPassed: opponentPassed,
+            onCardPlayed: onCardPlayed,
           ),
         ),
         Positioned(
@@ -218,6 +238,8 @@ class _UnitSection extends StatelessWidget {
   final List<String> rowTypes;
   final void Function(bool) timerPause;
   final String? pausedTime;
+  final bool opponentPassed;
+  final VoidCallback? onCardPlayed;
 
   const _UnitSection({
     required this.player,
@@ -226,6 +248,8 @@ class _UnitSection extends StatelessWidget {
     required this.rowTypes,
     required this.timerPause,
     required this.pausedTime,
+    this.opponentPassed = false,
+    this.onCardPlayed,
   });
 
   @override
@@ -354,9 +378,19 @@ class _UnitSection extends StatelessWidget {
                             onTap: () {
                               Navigator.of(context).pop();
                               try {
-                                timerPause(false);
+                                // Reset the timer when a card is played
+                                final timerProvider =
+                                    Provider.of<TimerProvider>(context,
+                                        listen: false);
+                                timerProvider.resetTimer();
+                                timerPause(false); // Also unpause
+
+                                // If a card was played and we have a callback, trigger it
+                                if (onCardPlayed != null) {
+                                  onCardPlayed!();
+                                }
                               } catch (e) {
-                                debugPrint("Error resuming timer: $e");
+                                debugPrint("Error resetting timer: $e");
                               }
                             },
                             child: Container(

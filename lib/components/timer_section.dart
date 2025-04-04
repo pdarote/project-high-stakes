@@ -13,6 +13,8 @@ class TimerSection extends StatefulWidget {
   final VoidCallback onTimerTimeout;
   final void Function(bool) timerPause;
   final VoidCallback onPass;
+  final bool player1Passed; // Add this parameter
+  final bool player2Passed; // Add this parameter
 
   const TimerSection({
     super.key,
@@ -27,6 +29,8 @@ class TimerSection extends StatefulWidget {
     required this.onTimerTimeout,
     required this.timerPause,
     required this.onPass,
+    required this.player1Passed, // Add this param
+    required this.player2Passed, // Add this param
   });
 
   @override
@@ -190,6 +194,10 @@ class _TimerSectionState extends State<TimerSection> {
       ),
     );
 
+    // Determine if opponent has passed
+    final bool opponentHasPassed =
+        widget.currentPlayer == 1 ? widget.player2Passed : widget.player1Passed;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -230,9 +238,13 @@ class _TimerSectionState extends State<TimerSection> {
               SizedBox(
                 height: 60,
                 child: ElevatedButton(
-                  onPressed: widget.onSwitchTurn,
+                  onPressed: opponentHasPassed
+                      ? null
+                      : widget.onSwitchTurn, // Disable if opponent passed
                   style: buttonStyle,
-                  child: const Text("END TURN"),
+                  child: Text(
+                    opponentHasPassed ? "OPPONENT PASSED" : "END TURN",
+                  ),
                 ),
               ),
               const SizedBox(height: 10),

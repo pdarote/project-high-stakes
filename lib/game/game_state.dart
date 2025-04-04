@@ -92,9 +92,7 @@ class GameState {
     }
 
     // If this is the first player to pass in this round, record it
-    if (firstPlayerToPassed == null) {
-      firstPlayerToPassed = currentPlayer;
-    }
+    firstPlayerToPassed ??= currentPlayer;
 
     // Reset the timeout flag to prevent the modal from reappearing
     isTimeout = false;
