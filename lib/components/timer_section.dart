@@ -194,10 +194,6 @@ class _TimerSectionState extends State<TimerSection> {
       ),
     );
 
-    // Determine if opponent has passed
-    final bool opponentHasPassed =
-        widget.currentPlayer == 1 ? widget.player2Passed : widget.player1Passed;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -234,19 +230,20 @@ class _TimerSectionState extends State<TimerSection> {
           )
         else if (!widget.isTimeout)
           Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(
-                height: 60,
-                child: ElevatedButton(
-                  onPressed: opponentHasPassed
-                      ? null
-                      : widget.onSwitchTurn, // Disable if opponent passed
-                  style: buttonStyle,
-                  child: Text(
-                    opponentHasPassed ? "OPPONENT PASSED" : "END TURN",
-                  ),
-                ),
-              ),
+              // SizedBox(
+              //   height: 60,
+              //   child: ElevatedButton(
+              //     onPressed: opponentHasPassed
+              //         ? null
+              //         : widget.onSwitchTurn, // Disable if opponent passed
+              //     style: buttonStyle,
+              //     child: Text(
+              //       opponentHasPassed ? "OPPONENT PASSED" : "END TURN",
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 10),
               SizedBox(
                 height: 60,

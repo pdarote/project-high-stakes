@@ -1,7 +1,5 @@
 import "package:flutter/material.dart";
-import "package:provider/provider.dart";
-import "../providers/timer_provider.dart";
-import "card_selection_modal.dart"; // Add this import
+import "card_selection_modal.dart";
 
 class GameTable extends StatelessWidget {
   final int currentPlayer;
@@ -282,6 +280,18 @@ class _UnitSection extends StatelessWidget {
                           player: player,
                           timerPause: timerPause,
                           onCardPlayed: onCardPlayed,
+                          crossAxisCount: 4,
+                          cardNames: const [
+                            "Common",
+                            "Morale",
+                            "Bond",
+                            "Berserker",
+                            "Hero",
+                            "Morale Hero",
+                            "Shield",
+                            "Spy",
+                          ],
+                          showScorch: true, // Using the default value
                         )
                     : null,
                 child: Container(
@@ -344,7 +354,6 @@ class _TotalPowerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Convert string value to integer for comparison
     final int powerValue = int.tryParse(value) ?? 0;
 
     return Container(
@@ -362,14 +371,13 @@ class _TotalPowerSection extends StatelessWidget {
               ),
       ),
       child: Center(
-        // Only show value if it's greater than 0
         child: powerValue > 0
             ? Text(
                 value,
                 style:
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               )
-            : const SizedBox(), // Empty widget when value is 0
+            : const SizedBox(),
       ),
     );
   }
@@ -392,7 +400,6 @@ class _TableCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Convert text to integer for comparison when it's a value cell
     final int powerValue = isValue ? (int.tryParse(text) ?? 0) : 0;
 
     return Container(
@@ -412,10 +419,9 @@ class _TableCell extends StatelessWidget {
       ),
       child: isValue
           ? Center(
-              // Only show text if power value is greater than 0
               child: powerValue > 0
                   ? Text(text, style: const TextStyle(fontSize: 16))
-                  : null, // No child when value is 0
+                  : null,
             )
           : const SizedBox(),
     );
