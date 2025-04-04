@@ -354,24 +354,20 @@ class _UnitSection extends StatelessWidget {
                       padding: const EdgeInsets.all(16.0),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 5,
+                        crossAxisCount: 3,
                         crossAxisSpacing: 8.0,
                         mainAxisSpacing: 8.0,
                         childAspectRatio: 65 / 100,
                       ),
-                      itemCount: 10,
+                      itemCount: 6,
                       itemBuilder: (context, index) {
                         final cardNames = [
-                          "Weather",
-                          "Horn",
                           "Common",
-                          "Bond",
-                          "Shield",
-                          "Clear",
                           "Morale",
+                          "Bond",
                           "Hero",
-                          "Bond.H",
-                          "Morale.H"
+                          "Morale Hero",
+                          "Shield",
                         ];
                         return _HoverDetector(
                           builder: (context, isHovering) => GestureDetector(
@@ -481,6 +477,9 @@ class _TotalPowerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Convert string value to integer for comparison
+    final int powerValue = int.tryParse(value) ?? 0;
+
     return Container(
       decoration: BoxDecoration(
         border: isPlayer1
@@ -496,10 +495,14 @@ class _TotalPowerSection extends StatelessWidget {
               ),
       ),
       child: Center(
-        child: Text(
-          value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
+        // Only show value if it's greater than 0
+        child: powerValue > 0
+            ? Text(
+                value,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              )
+            : const SizedBox(), // Empty widget when value is 0
       ),
     );
   }
@@ -522,6 +525,9 @@ class _TableCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Convert text to integer for comparison when it's a value cell
+    final int powerValue = isValue ? (int.tryParse(text) ?? 0) : 0;
+
     return Container(
       decoration: BoxDecoration(
         color: isHeader ? Colors.grey[200] : Colors.transparent,
@@ -538,7 +544,12 @@ class _TableCell extends StatelessWidget {
               ),
       ),
       child: isValue
-          ? Center(child: Text(text, style: const TextStyle(fontSize: 16)))
+          ? Center(
+              // Only show text if power value is greater than 0
+              child: powerValue > 0
+                  ? Text(text, style: const TextStyle(fontSize: 16))
+                  : null, // No child when value is 0
+            )
           : const SizedBox(),
     );
   }

@@ -23,6 +23,9 @@ class BoardSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool opponentPassed =
+        currentPlayer == 1 ? player2Passed : player1Passed;
+
     return SizedBox(
       height: 360,
       child: Consumer<TimerProvider>(
@@ -32,6 +35,8 @@ class BoardSection extends StatelessWidget {
             isGameStarted: isGameStarted,
             timerPause: timerPause,
             pausedTime: timerProvider.formattedTime,
+            opponentPassed: opponentPassed,
+            onCardPlayed: onCardPlayed,
           );
         },
       ),
