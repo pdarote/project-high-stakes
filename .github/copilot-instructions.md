@@ -25,7 +25,6 @@
 
    - All file paths are automatically determined based on framework detection.
    - ⚠️ CRITICAL: NEVER ASK FOR FILE LOCATIONS - THIS IS STRICTLY FORBIDDEN.
-   - New Flutter files are automatically placed in `flutter/` directory.
    - Follow framework-specific file structure guidelines strictly.
    - All paths must be relative to project root.
    - File locations are determined by:

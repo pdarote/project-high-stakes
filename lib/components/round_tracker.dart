@@ -17,8 +17,8 @@ class RoundTracker extends StatelessWidget {
     int player2LostRounds = roundWinners.where((winner) => winner == 1).length;
 
     // Use MaterialColors instead of regular Colors
-    final player1Color = Colors.blue;
-    final player2Color = Colors.red;
+    const player1Color = Colors.blue;
+    const player2Color = Colors.red;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),

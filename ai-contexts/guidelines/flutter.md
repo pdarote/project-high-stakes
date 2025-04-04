@@ -166,17 +166,16 @@ This ensures consistent appearance across different device sizes while maintaini
    - Use `_golden_test.dart` suffix for golden tests
 
    ```
-   digital_name_card/
-   └─ flutter/
-      ├─ lib/
-      │  └─ common/
-      │      └─ components/
-      │          └─ custom_button.dart
-      └─ test/
-          └─ common/
-              └─ components/
-                  ├─ custom_button_test.dart
-                  └─ custom_button_golden_test.dart
+   project-high-stakes/
+    ├─ lib/
+    │  └─ common/
+    │      └─ components/
+    │          └─ custom_button.dart
+    └─ test/
+        └─ common/
+            └─ components/
+                ├─ custom_button_test.dart
+                └─ custom_button_golden_test.dart
    ```
 
 2. **Component Testing Requirements**
@@ -309,7 +308,7 @@ This ensures consistent appearance across different device sizes while maintaini
 - Use shared design tokens from `/design-tokens` directory as single source of truth
 - Implement theme using the following structure:
 
-- Use `/flutter/lib/theme` structure for theme-related files.
+- Use `/lib/theme` structure for theme-related files.
 - Implement theme using the following structure:
   ```
   /lib/theme/
