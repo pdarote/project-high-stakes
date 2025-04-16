@@ -214,74 +214,87 @@ class _GameBoardState extends State<GameBoard>
       appBar: AppBar(
         title: const Text("High Stakes - Gwent Board Tracker"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Round indicator - now always shown
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: RoundIndicator(
-                currentRound: _gameState.currentRound,
-                roundWinners: _gameState.roundWinners,
-                isGameStarted: _gameState.isGameStarted,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Round indicator - now always shown
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: RoundIndicator(
+                  currentRound: _gameState.currentRound,
+                  roundWinners: _gameState.roundWinners,
+                  isGameStarted: _gameState.isGameStarted,
+                ),
               ),
-            ),
 
-            // Player 2 (top player) health tracker
-            PlayerHealthTracker(
-              playerNumber: 2,
-              isGameStarted: _gameState.isGameStarted,
-              lostRounds:
-                  _gameState.roundWinners.where((winner) => winner == 1).length,
-              firstPlayerToPassed: _gameState.firstPlayerToPassed,
-              currentRound: _gameState.currentRound,
-              hasPassed: _gameState.player2Passed, // Add this line
-            ),
-            const SizedBox(height: 8),
-
-            BoardSection(
-              currentPlayer: _gameState.currentPlayer,
-              isGameStarted: _gameState.isGameStarted,
-              timerPause: _timerPause,
-              player1Passed: _gameState.player1Passed,
-              player2Passed: _gameState.player2Passed,
-              onCardPlayed: _handleCardPlayed,
-            ),
-
-            const SizedBox(height: 8),
-
-            // Player 1 (bottom player) health tracker
-            PlayerHealthTracker(
-              playerNumber: 1,
-              isGameStarted: _gameState.isGameStarted,
-              lostRounds:
-                  _gameState.roundWinners.where((winner) => winner == 2).length,
-              firstPlayerToPassed: _gameState.firstPlayerToPassed,
-              currentRound: _gameState.currentRound,
-              hasPassed: _gameState.player1Passed, // Add this line
-            ),
-
-            const SizedBox(height: 16),
-            Expanded(
-              child: TimerSection(
-                currentPlayer: _gameState.currentPlayer,
-                nextPlayer: _gameState.nextPlayer,
+              // Player 2 (top player) health tracker
+              PlayerHealthTracker(
+                playerNumber: 2,
                 isGameStarted: _gameState.isGameStarted,
-                isTimeout: _gameState.isTimeout,
-                isManualPaused: _gameState.isManualPaused,
-                timerDurationInSeconds: _gameState.timerDurationInSeconds,
-                onStartOrEndGame: _startOrEndGame,
-                onSwitchTurn: _switchTurn,
-                onTimerTimeout: _setTimeout,
+                lostRounds: _gameState.roundWinners
+                    .where((winner) => winner == 1)
+                    .length,
+                firstPlayerToPassed: _gameState.firstPlayerToPassed,
+                currentRound: _gameState.currentRound,
+                hasPassed: _gameState.player2Passed, // Add this line
+              ),
+              const SizedBox(height: 8),
+
+              BoardSection(
+                currentPlayer: _gameState.currentPlayer,
+                isGameStarted: _gameState.isGameStarted,
                 timerPause: _timerPause,
-                onPass: _playerPassedRound,
                 player1Passed: _gameState.player1Passed,
                 player2Passed: _gameState.player2Passed,
+                onCardPlayed: _handleCardPlayed,
               ),
-            ),
-          ],
+
+              const SizedBox(height: 8),
+
+              // Player 1 (bottom player) health tracker
+              PlayerHealthTracker(
+                playerNumber: 1,
+                isGameStarted: _gameState.isGameStarted,
+                lostRounds: _gameState.roundWinners
+                    .where((winner) => winner == 2)
+                    .length,
+                firstPlayerToPassed: _gameState.firstPlayerToPassed,
+                currentRound: _gameState.currentRound,
+                hasPassed: _gameState.player1Passed, // Add this line
+              ),
+
+              const SizedBox(height: 16),
+
+              // Timer section (Not using Expanded as it doesn't work in SingleChildScrollView)
+              SizedBox(
+                height:
+                    180, // Increased height from 100 to 180 to accommodate the PASS button
+                child: TimerSection(
+                  currentPlayer: _gameState.currentPlayer,
+                  nextPlayer: _gameState.nextPlayer,
+                  isGameStarted: _gameState.isGameStarted,
+                  isTimeout: _gameState.isTimeout,
+                  isManualPaused: _gameState.isManualPaused,
+                  timerDurationInSeconds: _gameState.timerDurationInSeconds,
+                  onStartOrEndGame: _startOrEndGame,
+                  onSwitchTurn: _switchTurn,
+                  onTimerTimeout: _setTimeout,
+                  timerPause: _timerPause,
+                  onPass: _playerPassedRound,
+                  player1Passed: _gameState.player1Passed,
+                  player2Passed: _gameState.player2Passed,
+                ),
+              ),
+
+              // Add padding at the bottom to ensure content isn't cut off
+              const SizedBox(
+                  height:
+                      40), // Increased from 20 to 40 for more bottom padding
+            ],
+          ),
         ),
       ),
     );
