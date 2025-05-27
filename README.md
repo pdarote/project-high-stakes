@@ -1,31 +1,15 @@
 # project-high-stakes
 
-Flutter mobile APP for Gwent score board.
+This repository a Flutter application for a Gwent Scoreboard.
 
-## Features
+## Project Structure
 
-- Track scores for Gwent matches.
-- User-friendly interface for managing rounds and points.
-- Save and load match history.
+- **Flutter App**: Located in the `flutter/` directory. This is a mobile application for tracking Gwent match scores.
+- **Guidelines and Stories**: Located in the `ai-contexts/` directory. Contains development guidelines and user stories for the project.
 
-## Installation
+## Flutter App
 
-1. Navigate to the project directory:
-   ```bash
-   cd project-high-stakes
-   ```
-2. Install dependencies:
-   ```bash
-   flutter pub get
-   ```
-
-## Usage
-
-1. Run the app on an emulator or connected device:
-   ```bash
-   flutter run
-   ```
-2. Follow the on-screen instructions to start tracking scores.
+For details on the Flutter app, refer to the [Flutter README](flutter/README.md).
 
 ## Contributing
 

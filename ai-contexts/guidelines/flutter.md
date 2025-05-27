@@ -2,6 +2,19 @@
 
 Flutter Coding Standard
 
+## 0. Project Root
+
+All Flutter related code must be contained within the `/flutter` folder at the project root:
+
+```
+digital_name_card/
+├─ nextjs/         # Next.js project files
+└─ flutter/       # All Flutter project files
+   ├─ lib/
+   ├─ test/
+   └─ ...
+```
+
 ## 1. Project Structure
 
 1. **Single Source of Truth**
@@ -18,24 +31,25 @@ Flutter Coding Standard
 3. **Example Layout**
    ```
    digital_name_card/
-   └─ lib/
-      ├─ common/
-      │   └─ components/
-      ├─ screens/
-      │   ├─ home/
-      │   │   ├─ home_screen.dart
-      │   │   └─ home_controller.dart
-      │   └─ settings/
-      │       ├─ settings_screen.dart
-      │       └─ settings_controller.dart
-      ├─ theme/
-      │   ├─ app_theme.dart
-      │   ├─ app_colors.dart
-      │   └─ extensions/
-      ├─ models/
-      ├─ services/
-      ├─ utils/
-      └─ main.dart
+   └─ flutter/
+      |-lib/
+         ├─ common/
+         │   └─ components/
+         ├─ screens/
+         │   ├─ home/
+         │   │   ├─ home_screen.dart
+         │   │   └─ home_controller.dart
+         │   └─ settings/
+         │       ├─ settings_screen.dart
+         │       └─ settings_controller.dart
+         ├─ theme/
+         │   ├─ app_theme.dart
+         │   ├─ app_colors.dart
+         │   └─ extensions/
+         ├─ models/
+         ├─ services/
+         ├─ utils/
+         └─ main.dart
    ```
 
 ## 2. Naming Conventions
@@ -122,7 +136,6 @@ All UI elements should scale based on the device screen width:
 - Screen width ≥ 428px: Scale all UI sizes by 1.2 (20% larger)
 
 Example using UIScaling utility:
-
 ```dart
 // In utils/ui_scaling.dart
 class UIScaling {
@@ -160,33 +173,30 @@ This ensures consistent appearance across different device sizes while maintaini
 ## 6. Testing Practices
 
 1. **Test File Structure**
-
    - Place tests in the `/test` directory, mirroring the lib directory structure
    - Use `_test.dart` suffix for unit/widget tests
    - Use `_golden_test.dart` suffix for golden tests
-
    ```
-   project-high-stakes/
-    ├─ lib/
-    │  └─ common/
-    │      └─ components/
-    │          └─ custom_button.dart
-    └─ test/
-        └─ common/
-            └─ components/
-                ├─ custom_button_test.dart
-                └─ custom_button_golden_test.dart
+   digital_name_card/
+   └─ flutter/
+      ├─ lib/
+      │  └─ common/
+      │      └─ components/
+      │          └─ custom_button.dart
+      └─ test/
+          └─ common/
+              └─ components/
+                  ├─ custom_button_test.dart
+                  └─ custom_button_golden_test.dart
    ```
 
 2. **Component Testing Requirements**
    Every new component must include:
-
    - Unit/Widget tests
    - Golden tests
    - Minimum test coverage requirement: 80%
 
 3. **Unit/Widget Testing**
-
    ```dart
    void main() {
      testWidgets('CustomButton - renders correctly', (tester) async {
@@ -222,7 +232,6 @@ This ensures consistent appearance across different device sizes while maintaini
    ```
 
 4. **Golden Testing**
-
    ```dart
    void main() {
      group('CustomButton Golden Tests', () {
@@ -260,7 +269,6 @@ This ensures consistent appearance across different device sizes while maintaini
    ```
 
 5. **Test Commands**
-
    ```bash
    # Run all tests
    flutter test
@@ -276,14 +284,12 @@ This ensures consistent appearance across different device sizes while maintaini
    ```
 
 6. **Testing Best Practices**
-
    - Test component behavior, not implementation details
    - Test edge cases and error states
    - Create reusable test utilities and fixtures
    - Use semantic finders (byType, byKey) over text-based finders when possible
    - Test accessibility when applicable
    - Mock external dependencies and services
-
    ```dart
    // test/fixtures/user_fixture.dart
    final mockUser = User(
@@ -308,7 +314,7 @@ This ensures consistent appearance across different device sizes while maintaini
 - Use shared design tokens from `/design-tokens` directory as single source of truth
 - Implement theme using the following structure:
 
-- Use `/lib/theme` structure for theme-related files.
+- Use `/flutter/lib/theme` structure for theme-related files.
 - Implement theme using the following structure:
   ```
   /lib/theme/
@@ -325,7 +331,6 @@ This ensures consistent appearance across different device sizes while maintaini
 - Support both light and dark themes using design token values.
 - Implement a proper theme switching mechanism if required.
 - Example theme configuration:
-
   ```dart
   import 'package:flutter/material.dart';
 
@@ -391,10 +396,8 @@ This ensures consistent appearance across different device sizes while maintaini
     ],
   );
   ```
-
 - Wrap application with `ThemeProvider`.
 - Implement theme switching functionality using context.
-
   ```dart
   import 'package:flutter/material.dart';
 
