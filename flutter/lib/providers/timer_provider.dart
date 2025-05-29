@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import '../components/chess_clock.dart';
+import "package:flutter/material.dart";
+import "../components/chess_clock.dart";
 
 /// Provides global state management for the timer functionality
 class TimerProvider extends ChangeNotifier {
