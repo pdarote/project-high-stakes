@@ -27,3 +27,24 @@ This folder contains the breakdown of the core and all features of the Flutter c
 
 - **Utils**
   - [HS-14 Toast Notification](Flutter-04-utils/HS-14-toast-notification.md)
+
+- **Card Scoring**
+  - [HS-01 Card Score Selection Radial Menu](Flutter-05-card-scoring/HS-01-card-score-selection-radial-menu.md)
+  - [HS-02 Played Cards Display](Flutter-05-card-scoring/HS-02-played-cards-display.md)
+  - [HS-03 Played Card History](Flutter-05-card-scoring/HS-03-played-card-history.md)
+  - [HS-04 Cards Per Row Limit](Flutter-05-card-scoring/HS-04-cards-per-row-limit.md)
+  - [HS-05 Row, Side, and Board Score Counting](Flutter-05-card-scoring/HS-05-row-side-and-board-score-counting.md)
+  - [HS-06 Row Power Boost Types](Flutter-05-card-scoring/HS-06-row-power-boost-types.md)
+  - [HS-07 Row Weather Effects (Gain)](Flutter-05-card-scoring/HS-07-row-weather-effects-gain.md)
+  - [HS-08 Row Clear Weather Effects](Flutter-05-card-scoring/HS-08-row-clear-weather-effects.md)
+
+- **Card Abilities**
+  - [HS-01 Common Card](Flutter-06-card-abilities/HS-01-common-card.md)
+  - [HS-02 Morale Card's Effect](Flutter-06-card-abilities/HS-02-morale-cards-effect.md)
+  - [HS-03 Bond Card's Effect](Flutter-06-card-abilities/HS-03-bond-cards-effect.md)
+  - [HS-04 Berserker Card's Effect](Flutter-06-card-abilities/HS-04-berserker-cards-effect.md)
+  - [HS-05 Hero Card's Effect](Flutter-06-card-abilities/HS-05-hero-cards-effect.md)
+  - [HS-06 Morale Hero Card's Effect](Flutter-06-card-abilities/HS-06-morale-hero-cards-effect.md)
+  - [HS-07 Shield Card's Effect](Flutter-06-card-abilities/HS-07-shield-cards-effect.md)
+  - [HS-08 Spy Card's Effect](Flutter-06-card-abilities/HS-08-spy-cards-effect.md)
+  - [HS-09 Scorch Card's Effect](Flutter-06-card-abilities/HS-09-scorch-cards-effect.md)
