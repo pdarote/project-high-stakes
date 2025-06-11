@@ -29,8 +29,11 @@ So that I can track the time during gameplay.
 
 ## 🏗 Component Structure
 
-Components/
-|--timer_section.dart
+flutter/
+└─ lib/
+   └─ common/
+       └─ components/
+           └─ timer_section.dart
 
 ## 📝 Implementation Steps
 
@@ -66,21 +69,27 @@ Components/
 
 ## 🗂 Modified Files
 
-- `lib/components/timer_section.dart`
+- lib/common/components/timer_section.dart
 
 ---
 
 ## 🚨 Implementation Approval Process
 
 1. **Story Creation**
-   - Get approval on the story structure and requirements.
-
+   - First, create and document the story
+   - Get approval on the story structure and requirements
 2. **Implementation Steps**
-   - Never create or modify files without prior approval.
-
+   - After story approval, present the proposed file changes
+   - Wait for explicit approval before creating or modifying any files
+   - Never create or modify files without prior approval
 3. **Review Process**
-   - Get explicit approval before proceeding with implementation.
-
+   - Present file changes in a structured format
+   - List all files that will be created or modified
+   - Get explicit approval before proceeding with implementation
 4. **Approval Format**
    The user must explicitly approve:
+   - Story structure and requirements
+   - Proposed file changes
    - Implementation approach
+
+Note: Do not create or modify any files until receiving explicit approval from the user.

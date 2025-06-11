@@ -29,14 +29,16 @@ So that the project is ready for feature development.
 
 ## 🏗 Component Structure
 
-Core/
-|--lib/
-|--android/
-|--ios/
-|--web/
-|--linux/
-|--macos/
-|--windows/
+flutter/
+└─ lib/
+   ├─ main.dart
+   ├─ common/
+   ├─ screens/
+   ├─ theme/
+   ├─ models/
+   ├─ services/
+   ├─ utils/
+   └─ ... (platform folders: android/, ios/, web/, linux/, macos/, windows/)
 
 ## 📝 Implementation Steps
 
@@ -63,30 +65,36 @@ Core/
 
 | Task Name                 | Status         |
 | ------------------------- | -------------- |
-| Initialize Project        | ✅ Done       |
-| Set Up Folder Structure   | ✅ Done       |
-| Configure YAML Files      | ✅ Done       |
+| Initialize Project        | ✅ Done        |
+| Set Up Folder Structure   | ✅ Done        |
+| Configure YAML Files      | ✅ Done        |
 
 ---
 
 ## 🗂 Modified Files
 
-- `pubspec.yaml`
-- `analysis_options.yaml`
+- pubspec.yaml
+- analysis_options.yaml
 
 ---
 
 ## 🚨 Implementation Approval Process
 
 1. **Story Creation**
-   - Get approval on the story structure and requirements.
-
+   - First, create and document the story
+   - Get approval on the story structure and requirements
 2. **Implementation Steps**
-   - Never create or modify files without prior approval.
-
+   - After story approval, present the proposed file changes
+   - Wait for explicit approval before creating or modifying any files
+   - Never create or modify files without prior approval
 3. **Review Process**
-   - Get explicit approval before proceeding with implementation.
-
+   - Present file changes in a structured format
+   - List all files that will be created or modified
+   - Get explicit approval before proceeding with implementation
 4. **Approval Format**
    The user must explicitly approve:
+   - Story structure and requirements
+   - Proposed file changes
    - Implementation approach
+
+Note: Do not create or modify any files until receiving explicit approval from the user.
